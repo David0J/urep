@@ -2,6 +2,8 @@ window.addEventListener('DOMContentLoaded', () => {
     document.querySelector('header h1').style.animation = 'fadeIn 1.5s ease-in';
 });
 
+document.getElementById("year").textContent = new Date().getFullYear();
+
 document.getElementById('searchBar').addEventListener('input', function() {
     const query = this.value.toLowerCase();
     const categories = document.querySelectorAll('.category');
