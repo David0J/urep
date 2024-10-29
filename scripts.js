@@ -1,79 +1,100 @@
 window.addEventListener('DOMContentLoaded', () => {
     document.querySelector('header h1').style.animation = 'fadeIn 1.5s ease-in';
 });
+
 document.getElementById('searchBar').addEventListener('input', function() {
     const query = this.value.toLowerCase();
     const categories = document.querySelectorAll('.category');
-    
+
     categories.forEach(button => {
         const categoryText = button.textContent.toLowerCase();
         if (categoryText.includes(query)) {
-            button.style.display = 'inline-block'; // Show matching category
+            button.style.display = 'inline-block';
         } else {
-            button.style.display = 'none'; // Hide non-matching category
+            button.style.display = 'none';
         }
     });
 });
-       // Dark mode toggle functionality
-       const darkModeToggle = document.getElementById('darkModeToggle');
-       const body = document.body;
 
-       darkModeToggle.addEventListener('click', () => {
-           body.classList.toggle('dark-mode');
-           const icon = darkModeToggle.querySelector('i');
-           if (body.classList.contains('dark-mode')) {
-               icon.classList.remove('fa-moon');
-               icon.classList.add('fa-sun');
-           } else {
-               icon.classList.remove('fa-sun');
-               icon.classList.add('fa-moon');
-           }
-       });
+// Dark mode toggle functionality with localStorage
+const darkModeToggle = document.getElementById('darkModeToggle');
+const body = document.body;
 
-       // Category button click animation
-       const categories = document.querySelectorAll('.category');
-       categories.forEach(category => {
-           category.addEventListener('click', () => {
-               category.style.transform = 'scale(0.95)';
-               setTimeout(() => {
-                   category.style.transform = 'scale(1)';
-               }, 200);
-           });
-       });
-
-       // Wait for DOM to be fully loaded
+// Check localStorage on page load and apply saved mode
 document.addEventListener('DOMContentLoaded', () => {
+    const savedMode = localStorage.getItem('darkMode');
+    const icon = darkModeToggle.querySelector('i');
+    
+    if (savedMode === 'true') {
+        body.classList.add('dark-mode');
+        icon.classList.remove('fa-moon');
+        icon.classList.add('fa-sun');
+    } else {
+        body.classList.remove('dark-mode');
+        icon.classList.remove('fa-sun');
+        icon.classList.add('fa-moon');
+    }
+});
 
+darkModeToggle.addEventListener('click', () => {
+    body.classList.toggle('dark-mode');
+    const icon = darkModeToggle.querySelector('i');
+    
+    if (body.classList.contains('dark-mode')) {
+        icon.classList.remove('fa-moon');
+        icon.classList.add('fa-sun');
+        localStorage.setItem('darkMode', 'true');
+    } else {
+        icon.classList.remove('fa-sun');
+        icon.classList.add('fa-moon');
+        localStorage.setItem('darkMode', 'false');
+    }
+});
 
-    // Enhanced search functionality with debouncing
+// Category button click animation
+const categories = document.querySelectorAll('.category');
+categories.forEach(category => {
+    category.addEventListener('click', () => {
+        category.style.transform = 'scale(0.95)';
+        setTimeout(() => {
+            category.style.transform = 'scale(1)';
+        }, 200);
+    });
+});
+
+// Enhanced search functionality with debouncing
+document.addEventListener('DOMContentLoaded', () => {
     let searchTimeout;
+    const searchBar = document.getElementById('searchBar');
+    const universityCards = document.querySelectorAll('.university-card');
+
     searchBar.addEventListener('input', function() {
         clearTimeout(searchTimeout);
-        
+
         searchTimeout = setTimeout(() => {
             const query = this.value.toLowerCase().trim();
-            
-            categories.forEach(button => {
-                const categoryText = button.textContent.toLowerCase();
-                const matches = categoryText.includes(query);
-                
-                // Smooth transition for showing/hiding
-                button.style.transition = 'all 0.3s ease';
-                
+
+            universityCards.forEach(card => {
+                const universityName = card.querySelector('.university-name').textContent.toLowerCase();
+                const matches = universityName.includes(query);
+
+                card.style.transition = 'all 0.3s ease';
+
                 if (matches) {
-                    button.style.opacity = '1';
-                    button.style.transform = 'scale(1)';
-                    button.style.display = 'inline-block';
+                    card.style.opacity = '1';
+                    card.style.transform = 'scale(1)';
+                    card.style.display = 'block';
                 } else {
-                    button.style.opacity = '0';
-                    button.style.transform = 'scale(0.8)';
+                    card.style.opacity = '0';
+                    card.style.transform = 'scale(0.8)';
                     setTimeout(() => {
-                        if (!categoryText.includes(searchBar.value.toLowerCase().trim())) {
-                            button.style.display = 'none';
+                        if (!universityName.includes(searchBar.value.toLowerCase().trim())) {
+                            card.style.display = 'none';
                         }
                     }, 300);
                 }
             });
+
 
             // No results found message
             const noResults = document.getElementById('noResults');
@@ -92,10 +113,10 @@ document.addEventListener('DOMContentLoaded', () => {
             } else if (noResults) {
                 noResults.remove();
             }
-        }, 300); // Debounce delay
+        }, 300);
     });
 
-    // Add hover effects to categories
+    // Category hover and click effects
     categories.forEach(category => {
         category.addEventListener('mouseenter', () => {
             category.style.transform = 'translateY(-3px)';
@@ -107,7 +128,6 @@ document.addEventListener('DOMContentLoaded', () => {
             category.style.boxShadow = '0 2px 5px rgba(0,0,0,0.05)';
         });
 
-        // Add click animation
         category.addEventListener('click', function(e) {
             const ripple = document.createElement('span');
             ripple.classList.add('ripple');
@@ -127,7 +147,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-// Add smooth scrolling for anchor links
+// Smooth scrolling for anchor links
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function(e) {
         e.preventDefault();
@@ -141,7 +161,7 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     });
 });
 
-// Add scroll-based animations
+// Scroll-based animations
 const observerOptions = {
     threshold: 0.1,
     rootMargin: '0px 0px -50px 0px'
