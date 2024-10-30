@@ -240,3 +240,22 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
+
+function goBack() {
+    document.body.style.opacity = '0';
+    setTimeout(() => {
+        window.history.back();
+        setTimeout(() => {
+            document.body.style.opacity = '1';
+        }, 100);
+    }, 300);
+}
+
+// Add fade-in animation when page loads
+document.addEventListener('DOMContentLoaded', () => {
+    document.body.style.transition = 'opacity 0.3s ease';
+    document.body.style.opacity = '0';
+    setTimeout(() => {
+        document.body.style.opacity = '1';
+    }, 100);
+});
