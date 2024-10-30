@@ -251,11 +251,52 @@ function goBack() {
     }, 300);
 }
 
-// Add fade-in animation when page loads
 document.addEventListener('DOMContentLoaded', () => {
     document.body.style.transition = 'opacity 0.3s ease';
     document.body.style.opacity = '0';
     setTimeout(() => {
         document.body.style.opacity = '1';
     }, 100);
+});
+
+function showPDF(pdfName, button) {
+    document.querySelectorAll('.exam-button').forEach(btn => {
+        btn.classList.remove('active');
+    });
+
+    button.classList.add('active');
+
+    const container = document.querySelector('.pdf-viewer-container');
+    container.classList.add('active');
+
+    const pdfViewer = document.getElementById('pdfViewer');
+    pdfViewer.src = `${pdfName}`;
+
+    // Smooth scroll to PDF viewer
+    container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    // Add fade-in animation
+    container.style.opacity = '0';
+    setTimeout(() => {
+        container.style.opacity = '1';
+    }, 100);
+}
+
+// Add this to handle dark mode for PDF viewer
+function updatePDFViewerTheme() {
+    const isDarkMode = document.body.classList.contains('dark-mode');
+    const pdfContainer = document.querySelector('.pdf-viewer-container');
+    if (pdfContainer) {
+        if (isDarkMode) {
+            pdfContainer.style.background = 'var(--card-bg-dark, #2a2a2a)';
+        } else {
+            pdfContainer.style.background = 'var(--card-bg-light, #ffffff)';
+        }
+    }
+}
+
+// Add this to your existing dark mode toggle function
+document.getElementById('darkModeToggle').addEventListener('click', () => {
+    // Your existing dark mode toggle code
+    updatePDFViewerTheme();
 });
