@@ -48,6 +48,56 @@
     <button class="dark-mode-toggle" id="darkModeToggle">
         <i class="fas fa-moon"></i>
     </button>
+    <script>
+        function showPDF(pdfName, button) {
+            document.querySelectorAll('.exam-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            button.classList.add('active');
+            const container = document.querySelector('.pdf-viewer-container');
+            container.classList.add('active');
+            const pdfViewer = document.getElementById('pdfViewer');
+            pdfViewer.src = pdfName; 
+            container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            container.style.opacity = '0';
+            setTimeout(() => {
+                container.style.opacity = '1';
+            }, 100);
+        }
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        const body = document.body;
+        if (localStorage.getItem('darkMode') === 'enabled') {
+            body.classList.add('dark-mode');
+            darkModeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+        }
+        darkModeToggle.addEventListener('click', () => {
+            body.classList.toggle('dark-mode');
+            
+            if (body.classList.contains('dark-mode')) {
+                localStorage.setItem('darkMode', 'enabled');
+                darkModeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+            } else {
+                localStorage.setItem('darkMode', null);
+                darkModeToggle.innerHTML = '<i class="fas fa-moon"></i>';
+            }
+            updatePDFViewerTheme();
+        });
+        function updatePDFViewerTheme() {
+            const isDarkMode = body.classList.contains('dark-mode');
+            const pdfContainer = document.querySelector('.pdf-viewer-container');
+            if (pdfContainer) {
+                if (isDarkMode) {
+                    pdfContainer.style.background = 'var(--card-bg-dark)';
+                } else {
+                    pdfContainer.style.background = 'var(--card-bg-light)';
+                }
+            }
+        }
+        document.getElementById('year').textContent = new Date().getFullYear();
+        function goBack() {
+            window.history.back();
+        }
+    </script>
     <script src="../../../../../scripts.js"></script>
 </body>
 </html>
