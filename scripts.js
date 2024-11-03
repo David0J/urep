@@ -135,6 +135,10 @@ function showPDF(pdfName, button) {
     const pdfViewer = document.getElementById('pdfViewer');
     pdfViewer.src = pdfName;
 
+    // Adjust the initial zoom level based on screen size
+    const isMobile = window.innerWidth <= 768;
+    pdfViewer.scale = isMobile ? 0.5 : 1; // Adjust the initial zoom level as needed
+
     container.style.opacity = '0';
     container.scrollIntoView({ behavior: 'smooth', block: 'start' });
     setTimeout(() => {
@@ -143,8 +147,6 @@ function showPDF(pdfName, button) {
 
     updatePDFViewerTheme();
 }
-
-
 
 // Category initialization
 function initializeCategories() {
