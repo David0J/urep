@@ -1,87 +1,101 @@
-window.addEventListener('DOMContentLoaded', () => {
-    document.querySelector('header h1').style.animation = 'fadeIn 1.5s ease-in';
-});
-
-document.getElementById("year").textContent = new Date().getFullYear();
-
-document.getElementById('searchBar').addEventListener('input', function() {
-    const query = this.value.toLowerCase();
-    const categories = document.querySelectorAll('.category');
-
-    categories.forEach(button => {
-        const categoryText = button.textContent.toLowerCase();
-        if (categoryText.includes(query)) {
-            button.style.display = 'inline-block';
-        } else {
-            button.style.display = 'none';
-        }
-    });
-});
-
-// Dark mode toggle functionality with localStorage
+// Initialize dark mode state as soon as possible
 const darkModeToggle = document.getElementById('darkModeToggle');
 const body = document.body;
 
-// Check localStorage on page load and apply saved mode
-document.addEventListener('DOMContentLoaded', () => {
-    const savedMode = localStorage.getItem('darkMode');
+// Unified function to update dark mode state
+function updateDarkMode(isDark) {
     const icon = darkModeToggle.querySelector('i');
     
-    if (savedMode === 'true') {
+    if (isDark) {
         body.classList.add('dark-mode');
-        icon.classList.remove('fa-moon');
-        icon.classList.add('fa-sun');
-    } else {
-        body.classList.remove('dark-mode');
-        icon.classList.remove('fa-sun');
-        icon.classList.add('fa-moon');
-    }
-});
-
-darkModeToggle.addEventListener('click', () => {
-    body.classList.toggle('dark-mode');
-    const icon = darkModeToggle.querySelector('i');
-    
-    if (body.classList.contains('dark-mode')) {
         icon.classList.remove('fa-moon');
         icon.classList.add('fa-sun');
         localStorage.setItem('darkMode', 'true');
     } else {
+        body.classList.remove('dark-mode');
         icon.classList.remove('fa-sun');
         icon.classList.add('fa-moon');
         localStorage.setItem('darkMode', 'false');
     }
-});
+    updatePDFViewerTheme();
+}
 
-// Category button click animation
-const categories = document.querySelectorAll('.category');
-categories.forEach(category => {
-    category.addEventListener('click', () => {
-        category.style.transform = 'scale(0.95)';
-        setTimeout(() => {
-            category.style.transform = 'scale(1)';
-        }, 200);
+// Update PDF viewer theme based on dark mode
+function updatePDFViewerTheme() {
+    const isDarkMode = body.classList.contains('dark-mode');
+    const pdfContainer = document.querySelector('.pdf-viewer-container');
+    const examButtons = document.querySelectorAll('.exam-button');
+
+    if (pdfContainer) {
+        pdfContainer.style.backgroundColor = isDarkMode ? 'var(--card-bg-dark, #2a2a2a)' : 'var(--card-bg-light, #ffffff)';
+    }
+
+    examButtons.forEach(button => {
+        if (!button.classList.contains('active')) {
+            button.style.backgroundColor = isDarkMode ? 'var(--card-bg-dark, #2a2a2a)' : 'var(--card-bg-light, #ffffff)';
+            button.style.color = isDarkMode ? 'var(--text-color-dark, #ffffff)' : 'var(--text-color-light, #333333)';
+        }
     });
+}
+
+// Main initialization when DOM is loaded
+window.addEventListener('DOMContentLoaded', () => {
+    // Initialize dark mode from localStorage
+    const savedMode = localStorage.getItem('darkMode');
+    updateDarkMode(savedMode === 'true');
+
+    // Header animation
+    document.querySelector('header h1').style.animation = 'fadeIn 1.5s ease-in';
+
+    // Set copyright year
+    document.getElementById("year").textContent = new Date().getFullYear();
+
+    // Initialize search functionality
+    initializeSearch();
+
+    // Initialize category effects
+    initializeCategories();
+
+    // Initialize smooth scrolling
+    initializeSmoothScroll();
+
+    // Initialize scroll animations
+    initializeScrollAnimations();
+
+    // Page transition effect
+    document.body.style.transition = 'opacity 0.3s ease';
+    document.body.style.opacity = '0';
+    setTimeout(() => {
+        document.body.style.opacity = '1';
+    }, 100);
 });
 
-// Enhanced search functionality with debouncing
-document.addEventListener('DOMContentLoaded', () => {
-    let searchTimeout;
+// Dark mode toggle event listener
+darkModeToggle.addEventListener('click', () => {
+    const isDarkMode = !body.classList.contains('dark-mode');
+    updateDarkMode(isDarkMode);
+});
+
+// Search functionality initialization
+function initializeSearch() {
     const searchBar = document.getElementById('searchBar');
+    if (!searchBar) return;
+
+    let searchTimeout;
     const universityCards = document.querySelectorAll('.university-card');
+    const categories = document.querySelectorAll('.category');
 
     searchBar.addEventListener('input', function() {
         clearTimeout(searchTimeout);
-
         searchTimeout = setTimeout(() => {
             const query = this.value.toLowerCase().trim();
 
+            // Update university cards visibility
             universityCards.forEach(card => {
                 const universityName = card.querySelector('.university-name').textContent.toLowerCase();
                 const matches = universityName.includes(query);
 
                 card.style.transition = 'all 0.3s ease';
-
                 if (matches) {
                     card.style.opacity = '1';
                     card.style.transform = 'scale(1)';
@@ -97,29 +111,47 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
 
+            // Update categories visibility
+            categories.forEach(button => {
+                const categoryText = button.textContent.toLowerCase();
+                button.style.display = categoryText.includes(query) ? 'inline-block' : 'none';
+            });
 
-            // No results found message
-            const noResults = document.getElementById('noResults');
-            const visibleCategories = [...categories].filter(cat => 
-                cat.style.display !== 'none'
-            ).length;
-
-            if (query && visibleCategories === 0) {
-                if (!noResults) {
-                    const message = document.createElement('div');
-                    message.id = 'noResults';
-                    message.textContent = 'No matching categories found';
-                    message.style.animation = 'fadeIn 0.3s ease';
-                    searchBar.parentNode.appendChild(message);
-                }
-            } else if (noResults) {
-                noResults.remove();
-            }
+            // Handle no results message
+            updateNoResultsMessage(query, categories);
         }, 300);
     });
+}
 
-    // Category hover and click effects
+// PDF viewer functionality
+function showPDF(pdfName, button) {
+    const buttons = document.querySelectorAll('.exam-button');
+    buttons.forEach(btn => btn.classList.remove('active'));
+    button.classList.add('active');
+
+    const container = document.querySelector('.pdf-viewer-container');
+    container.classList.add('active');
+
+    const pdfViewer = document.getElementById('pdfViewer');
+    pdfViewer.src = pdfName;
+
+    container.style.opacity = '0';
+    container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    setTimeout(() => {
+        container.style.opacity = '1';
+    }, 100);
+
+    updatePDFViewerTheme();
+}
+
+
+
+// Category initialization
+function initializeCategories() {
+    const categories = document.querySelectorAll('.category');
+    
     categories.forEach(category => {
+        // Hover effects
         category.addEventListener('mouseenter', () => {
             category.style.transform = 'translateY(-3px)';
             category.style.boxShadow = '0 4px 15px rgba(0,0,0,0.1)';
@@ -130,6 +162,7 @@ document.addEventListener('DOMContentLoaded', () => {
             category.style.boxShadow = '0 2px 5px rgba(0,0,0,0.05)';
         });
 
+        // Click effects
         category.addEventListener('click', function(e) {
             const ripple = document.createElement('span');
             ripple.classList.add('ripple');
@@ -147,40 +180,64 @@ document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => ripple.remove(), 600);
         });
     });
-});
+}
 
-// Smooth scrolling for anchor links
-document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-    anchor.addEventListener('click', function(e) {
-        e.preventDefault();
-        const target = document.querySelector(this.getAttribute('href'));
-        if (target) {
-            target.scrollIntoView({
-                behavior: 'smooth',
-                block: 'start'
-            });
-        }
+// Initialize smooth scrolling
+function initializeSmoothScroll() {
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        });
     });
-});
+}
 
-// Scroll-based animations
-const observerOptions = {
-    threshold: 0.1,
-    rootMargin: '0px 0px -50px 0px'
-};
+// Initialize scroll animations
+function initializeScrollAnimations() {
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
 
-const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-        if (entry.isIntersecting) {
-            entry.target.classList.add('visible');
-            observer.unobserve(entry.target);
-        }
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+                observer.unobserve(entry.target);
+            }
+        });
+    }, observerOptions);
+
+    document.querySelectorAll('.animate-on-scroll').forEach(el => {
+        observer.observe(el);
     });
-}, observerOptions);
+}
 
-document.querySelectorAll('.animate-on-scroll').forEach(el => {
-    observer.observe(el);
-});
+// Update no results message
+function updateNoResultsMessage(query, categories) {
+    const noResults = document.getElementById('noResults');
+    const visibleCategories = [...categories].filter(cat => 
+        cat.style.display !== 'none'
+    ).length;
+
+    if (query && visibleCategories === 0) {
+        if (!noResults) {
+            const message = document.createElement('div');
+            message.id = 'noResults';
+            message.textContent = 'No matching categories found';
+            message.style.animation = 'fadeIn 0.3s ease';
+            document.getElementById('searchBar').parentNode.appendChild(message);
+        }
+    } else if (noResults) {
+        noResults.remove();
+    }
+}
 
 // Add required CSS animations
 const style = document.createElement('style');
@@ -240,58 +297,3 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
-
-function goBack() {
-    document.body.style.opacity = '0';
-    setTimeout(() => {
-        window.history.back();
-        setTimeout(() => {
-            document.body.style.opacity = '1';
-        }, 100);
-    }, 300);
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-    document.body.style.transition = 'opacity 0.3s ease';
-    document.body.style.opacity = '0';
-    setTimeout(() => {
-        document.body.style.opacity = '1';
-    }, 100);
-});
-
-function showPDF(pdfName, button) {
-    document.querySelectorAll('.exam-button').forEach(btn => {
-        btn.classList.remove('active');
-    });
-
-    button.classList.add('active');
-
-    const container = document.querySelector('.pdf-viewer-container');
-    container.classList.add('active');
-
-    const pdfViewer = document.getElementById('pdfViewer');
-    pdfViewer.src = `${pdfName}`;
-
-    // Smooth scroll to PDF viewer
-    container.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
-    // Add fade-in animation
-    container.style.opacity = '0';
-    setTimeout(() => {
-        container.style.opacity = '1';
-    }, 100);
-}
-
-// Add this to handle dark mode for PDF viewer
-function updatePDFViewerTheme() {
-    const isDarkMode = document.body.classList.contains('dark-mode');
-    const pdfContainer = document.querySelector('.pdf-viewer-container');
-    if (pdfContainer) {
-        if (isDarkMode) {
-            pdfContainer.style.background = 'var(--card-bg-dark, #2a2a2a)';
-        } else {
-            pdfContainer.style.background = 'var(--card-bg-light, #ffffff)';
-        }
-    }
-}
-
