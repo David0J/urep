@@ -295,8 +295,3 @@ function updatePDFViewerTheme() {
     }
 }
 
-// Add this to your existing dark mode toggle function
-document.getElementById('darkModeToggle').addEventListener('click', () => {
-    // Your existing dark mode toggle code
-    updatePDFViewerTheme();
-});
