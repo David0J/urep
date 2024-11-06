@@ -17,26 +17,8 @@ function updateDarkMode(isDark) {
         icon.classList.add('fa-moon');
         localStorage.setItem('darkMode', 'false');
     }
-    updatePDFViewerTheme();
 }
 
-// Update PDF viewer theme based on dark mode
-function updatePDFViewerTheme() {
-    const isDarkMode = body.classList.contains('dark-mode');
-    const pdfContainer = document.querySelector('.pdf-viewer-container');
-    const examButtons = document.querySelectorAll('.exam-button');
-
-    if (pdfContainer) {
-        pdfContainer.style.backgroundColor = isDarkMode ? 'var(--card-bg-dark, #2a2a2a)' : 'var(--card-bg-light, #ffffff)';
-    }
-
-    examButtons.forEach(button => {
-        if (!button.classList.contains('active')) {
-            button.style.backgroundColor = isDarkMode ? 'var(--card-bg-dark, #2a2a2a)' : 'var(--card-bg-light, #ffffff)';
-            button.style.color = isDarkMode ? 'var(--text-color-dark, #ffffff)' : 'var(--text-color-light, #333333)';
-        }
-    });
-}
 
 // Main initialization when DOM is loaded
 window.addEventListener('DOMContentLoaded', () => {
@@ -76,77 +58,7 @@ darkModeToggle.addEventListener('click', () => {
     updateDarkMode(isDarkMode);
 });
 
-// Search functionality initialization
-function initializeSearch() {
-    const searchBar = document.getElementById('searchBar');
-    if (!searchBar) return;
 
-    let searchTimeout;
-    const universityCards = document.querySelectorAll('.university-card');
-    const categories = document.querySelectorAll('.category');
-
-    searchBar.addEventListener('input', function() {
-        clearTimeout(searchTimeout);
-        searchTimeout = setTimeout(() => {
-            const query = this.value.toLowerCase().trim();
-
-            // Update university cards visibility
-            universityCards.forEach(card => {
-                const universityName = card.querySelector('.university-name').textContent.toLowerCase();
-                const matches = universityName.includes(query);
-
-                card.style.transition = 'all 0.3s ease';
-                if (matches) {
-                    card.style.opacity = '1';
-                    card.style.transform = 'scale(1)';
-                    card.style.display = 'block';
-                } else {
-                    card.style.opacity = '0';
-                    card.style.transform = 'scale(0.8)';
-                    setTimeout(() => {
-                        if (!universityName.includes(searchBar.value.toLowerCase().trim())) {
-                            card.style.display = 'none';
-                        }
-                    }, 300);
-                }
-            });
-
-            // Update categories visibility
-            categories.forEach(button => {
-                const categoryText = button.textContent.toLowerCase();
-                button.style.display = categoryText.includes(query) ? 'inline-block' : 'none';
-            });
-
-            // Handle no results message
-            updateNoResultsMessage(query, categories);
-        }, 300);
-    });
-}
-
-// PDF viewer functionality
-function showPDF(pdfName, button) {
-    const buttons = document.querySelectorAll('.exam-button');
-    buttons.forEach(btn => btn.classList.remove('active'));
-    button.classList.add('active');
-
-    const container = document.querySelector('.pdf-viewer-container');
-    container.classList.add('active');
-
-    const pdfViewer = document.getElementById('pdfViewer');
-    pdfViewer.src = pdfName;
-
-    // Adjust the initial zoom level based on screen size
-    const isMobile = window.innerWidth <= 768;
-    pdfViewer.scale = isMobile ? 0.5 : 1; // Adjust the initial zoom level as needed
-
-    container.style.opacity = '0';
-    container.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    setTimeout(() => {
-        container.style.opacity = '1';
-    }, 100);
-
-    updatePDFViewerTheme();
-}
 
 // Category initialization
 function initializeCategories() {
@@ -221,18 +133,91 @@ function initializeScrollAnimations() {
     });
 }
 
-// Update no results message
-function updateNoResultsMessage(query, categories) {
-    const noResults = document.getElementById('noResults');
-    const visibleCategories = [...categories].filter(cat => 
-        cat.style.display !== 'none'
-    ).length;
+// Alternate name mapping for universities (add more if needed)
+const universitySynonyms = {
+    'balamand': 'uob',
+    'university of balamand': 'uob',
+    'lebanese american university': 'lau',
+    'lebanese': 'lau',
+    'american university of beirut': 'aub',
+    'american university': 'aub',
+    'american': 'aub',
+    'kaslik': 'usek',
+    'holy spirit university of kaslik': 'usek',
+    'holy spirit university': 'usek',
+    'holy spirit': 'usek',
+    'holy': 'usek',
+    'universite saint joseph': 'usj',
+    'saint joseph university': 'usj',
+    'saint joseph': 'usj',
+};
 
-    if (query && visibleCategories === 0) {
+// Normalize search query by checking synonyms as well
+function getNormalizedName(name) {
+    const normalized = name.toLowerCase().trim();
+    return universitySynonyms[normalized] || normalized; // Use synonym if exists, else original
+}
+
+// Search functionality initialization
+function initializeSearch() {
+    const searchBar = document.getElementById('searchBar');
+    if (!searchBar) return;
+
+    let searchTimeout;
+    const universityCards = document.querySelectorAll('.university-card');
+    const categories = document.querySelectorAll('.category');
+
+    searchBar.addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            const query = this.value.toLowerCase().trim();
+            const normalizedQuery = getNormalizedName(query); // Normalize the query
+
+            // Update university cards visibility
+            universityCards.forEach(card => {
+                const universityName = card.querySelector('.university-name').textContent.toLowerCase().trim();
+                const normalizedUniversityName = getNormalizedName(universityName); // Normalize the university name
+                const matches = normalizedUniversityName.includes(normalizedQuery); // Matching normalized names
+
+                card.style.transition = 'all 0.3s ease';
+                if (matches) {
+                    card.style.opacity = '1';
+                    card.style.transform = 'scale(1)';
+                    card.style.display = 'block';
+                } else {
+                    card.style.opacity = '0';
+                    card.style.transform = 'scale(0.8)';
+                    setTimeout(() => {
+                        if (!normalizedUniversityName.includes(normalizedQuery)) {
+                            card.style.display = 'none';
+                        }
+                    }, 300);
+                }
+            });
+
+            // Update categories visibility
+            categories.forEach(button => {
+                const categoryText = button.textContent.toLowerCase().trim();
+                button.style.display = categoryText.includes(query) ? 'inline-block' : 'none';
+            });
+
+            // Handle no results message
+            updateNoResultsMessage(query, categories, universityCards);
+        }, 300);
+    });
+}
+
+// Update no results message
+function updateNoResultsMessage(query, categories, universityCards) {
+    const noResults = document.getElementById('noResults');
+    const visibleCategories = [...categories].filter(cat => cat.style.display !== 'none').length;
+    const visibleUniversityCards = [...universityCards].filter(card => card.style.display !== 'none').length;
+
+    if (query && visibleCategories === 0 && visibleUniversityCards === 0) {
         if (!noResults) {
             const message = document.createElement('div');
             message.id = 'noResults';
-            message.textContent = 'No matching categories found';
+            message.textContent = 'No matching results found';
             message.style.animation = 'fadeIn 0.3s ease';
             document.getElementById('searchBar').parentNode.appendChild(message);
         }

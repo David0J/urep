@@ -179,7 +179,6 @@ body {
     padding: 0 20px;
 }
 
-/* Navigation */
 nav {
     background: var(--card-bg-light);
     padding: 1rem 0;
@@ -212,7 +211,6 @@ nav {
     font-weight: 500;
 }
 
-/* Header */
 header {
     text-align: center;
     padding: 3rem 0;
@@ -227,7 +225,6 @@ header h1 {
     margin-bottom: 1rem;
 }
 
-/* Search Section */
 .search-section {
     margin: 2rem 0;
     position: relative;
